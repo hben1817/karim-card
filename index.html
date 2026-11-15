@@ -1,192 +1,586 @@
 <!doctype html>
-<html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}[hidden]{display:none!important}img{max-width:100%}</style></head><body>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#EEF3F1">
 <title>Karim's Talking Cards</title>
-<meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nunito:wght@600;800&display=swap">
 <style>
-/* Layout: one calm screen, four big picture cards in a 2x2 grid, a small grown-up bar at the bottom. Single soft-light look by choice. */
+/* Layout: one calm screen. Child view = cards (one big card, or a grid) plus a slim bar.
+   Parent view = a full-screen panel opened by holding the Parents button. Single soft-light look by choice. */
 :root{
-  --bg:#EEF3F1; --card:#FFFFFF; --ink:#23413A; --soft:#6B8A82;
-  --ring:#3E8E7E; --glow:#D5ECE5; --line:#D3E0DB;
-  --c1:#FCE9D2; --c2:#DCEAF7; --c3:#D6F0F0; --c4:#F3E3EF;
+  --bg:#EEF3F1; --card:#FFFFFF; --ink:#23413A; --soft:#5F7F77;
+  --ring:#3E8E7E; --glow:#D5ECE5; --line:#D3E0DB; --warn:#B4532A;
+  --c1:#FCE9D2; --c2:#DCEAF7; --c3:#D6F0F0; --c4:#F3E3EF; --c5:#E6F1D6; --c6:#FBE4E0;
   --font:"Nunito",ui-rounded,"Segoe UI",system-ui,sans-serif;
   color-scheme:light;
 }
-html,body{height:100%}
-body{background:var(--bg);color:var(--ink);font-family:var(--font);margin:0;
-  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));
-  padding-block:12px;box-sizing:border-box;display:flex;flex-direction:column;gap:12px;
-  -webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent}
-.grid{flex:1;display:grid;grid-template-columns:1fr 1fr;gap:14px;min-height:0}
-.card{position:relative;border:4px solid transparent;border-radius:28px;background:var(--card);
-  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;
-  padding:12px;cursor:pointer;min-height:0;overflow:hidden;font:inherit;color:inherit;
-  box-shadow:0 2px 0 var(--line);transition:border-color .25s, background-color .25s}
-.card:focus-visible{outline:4px solid var(--ring);outline-offset:3px}
-.card.active{border-color:var(--ring);background:var(--glow)}
-.pic{width:100%;flex:1;min-height:0;display:flex;align-items:center;justify-content:center;border-radius:20px}
-.pic img{max-width:100%;max-height:100%;object-fit:contain;border-radius:16px}
-.pic .emo{font-size:clamp(64px,16vmin,180px);line-height:1}
-.ru{font-weight:800;font-size:clamp(22px,4.6vmin,46px);text-align:center;text-wrap:balance}
-.en{font-weight:600;font-size:clamp(13px,2.2vmin,20px);color:var(--soft)}
-.hide-en .en{display:none}
-.bar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:space-between}
-.btn{font:inherit;font-weight:700;font-size:15px;border:2px solid var(--line);background:var(--card);color:var(--ink);
-  border-radius:999px;padding:8px 14px;cursor:pointer}
-.btn:focus-visible{outline:3px solid var(--ring);outline-offset:2px}
-.btn.on{background:var(--ink);color:var(--card);border-color:var(--ink)}
-.tools{display:none;gap:6px;flex-wrap:wrap;justify-content:center;width:100%}
-.grown .tools{display:flex}
-.tools label{font-size:13px;font-weight:700;border:2px dashed var(--line);border-radius:12px;padding:6px 10px;cursor:pointer;background:var(--bg)}
-.tools input{display:none}
-.note{font-size:14px;color:var(--soft);flex-basis:100%;text-align:center}
-.note:empty{display:none}
-@media (max-width:420px){.grid{gap:10px}.card{border-radius:20px;padding:8px}}
-@media (prefers-reduced-motion:reduce){.card{transition:none}}
-</style>
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html,body{height:100%;margin:0;overflow:hidden}
+body{background:var(--bg);color:var(--ink);font-family:var(--font);font-size:16px;
+  -webkit-tap-highlight-color:transparent;overscroll-behavior:none}
+button,input,select{font:inherit;color:inherit}
+.app{position:fixed;inset:0;display:flex;flex-direction:column;gap:10px;
+  padding:max(10px,env(safe-area-inset-top,0px)) max(12px,env(safe-area-inset-right,0px)) max(10px,env(safe-area-inset-bottom,0px)) max(12px,env(safe-area-inset-left,0px));
+  -webkit-user-select:none;user-select:none}
 
-<main class="grid" id="grid" aria-label="Talking cards"></main>
-<div class="bar">
-  <button class="btn" id="steps" type="button">▶ Play the steps</button>
-  <div style="display:flex;gap:8px;flex-wrap:wrap">
-    <button class="btn" id="enBtn" type="button">English labels</button>
-    <button class="btn" id="fsBtn" type="button">Full screen</button>
-    <button class="btn" id="grownBtn" type="button">Grown-up mode</button>
+/* ---------- child view ---------- */
+.stage{flex:1;min-height:0;min-width:0;position:relative}
+.grid{height:100%;display:grid;gap:12px;overflow-y:auto;overscroll-behavior:contain;align-content:start}
+.one{height:100%;display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:8px;align-items:stretch}
+.card{position:relative;border:4px solid transparent;border-radius:26px;background:var(--card);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;
+  padding:10px;cursor:pointer;min-height:0;min-width:0;overflow:hidden;
+  box-shadow:0 2px 0 var(--line);transition:border-color .25s,background-color .25s}
+.card:focus-visible{outline:4px solid var(--ring);outline-offset:-4px}
+.card.active{border-color:var(--ring);background:var(--glow)}
+.pic{width:100%;flex:1;min-height:0;display:flex;align-items:center;justify-content:center;border-radius:18px;overflow:hidden}
+.pic img{width:100%;height:100%;object-fit:contain;display:block}
+.pic .emo{line-height:1;font-size:min(22vmin,150px)}
+.one .pic .emo{font-size:min(46vmin,340px)}
+.ru{font-weight:800;text-align:center;text-wrap:balance;line-height:1.25;flex:none;max-width:100%;overflow-wrap:anywhere;font-size:clamp(18px,4.2vmin,40px)}
+.en{font-weight:600;color:var(--soft);text-align:center;flex:none;font-size:clamp(12px,2.1vmin,19px)}
+.one .ru{font-size:clamp(26px,7vmin,72px)}
+.one .en{font-size:clamp(14px,2.8vmin,26px)}
+.hide-en .en{display:none}
+.nav{width:clamp(44px,9vmin,84px);border:0;border-radius:22px;background:var(--card);box-shadow:0 2px 0 var(--line);
+  font-size:clamp(28px,6vmin,56px);font-weight:800;cursor:pointer;color:var(--ring);display:flex;align-items:center;justify-content:center}
+.nav:focus-visible{outline:4px solid var(--ring)}
+.nav:disabled{opacity:.25;cursor:default}
+.bar{display:flex;gap:8px;align-items:center;justify-content:space-between;flex-wrap:nowrap;min-height:44px}
+.dots{display:flex;gap:6px;flex:1 1 0;justify-content:center;min-width:0;overflow:hidden}
+.dot{width:10px;height:10px;border-radius:50%;background:var(--line);flex:none}
+.dot.on{background:var(--ring)}
+.btn{font-weight:800;font-size:15px;border:2px solid var(--line);background:var(--card);border-radius:999px;
+  padding:9px 14px;cursor:pointer;white-space:nowrap;position:relative;overflow:hidden;min-height:44px;flex:none}
+.btn:focus-visible{outline:3px solid var(--ring);outline-offset:2px}
+.btn.on,.btn.primary{background:var(--ink);color:var(--card);border-color:var(--ink)}
+.btn.danger{color:var(--warn);border-color:var(--warn)}
+.btn.small{font-size:14px;padding:6px 11px;min-height:38px}
+.hold::after{content:"";position:absolute;left:0;top:0;bottom:0;width:0;background:var(--glow);z-index:0}
+.hold.holding::after{width:100%;transition:width 1.2s linear}
+.hold span{position:relative;z-index:1}
+.toast{position:absolute;left:50%;bottom:8px;transform:translateX(-50%);background:var(--ink);color:var(--card);
+  padding:10px 16px;border-radius:14px;font-weight:700;font-size:15px;max-width:92%;text-align:center;z-index:5}
+@media (max-width:480px){.btn{font-size:13px;padding:8px 10px}.card{border-radius:20px;padding:8px}}
+
+/* ---------- parent panel ---------- */
+.panel{position:fixed;inset:0;background:var(--bg);z-index:20;overflow-y:auto;-webkit-user-select:text;user-select:text;
+  padding:max(14px,env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-right,0px)) max(24px,env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px))}
+.wrap{max-width:720px;margin:0 auto;display:flex;flex-direction:column;gap:16px}
+.phead{display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap}
+.phead h1{font-size:24px;margin:0;font-weight:800;text-wrap:balance}
+.sec{background:var(--card);border-radius:20px;padding:16px;display:flex;flex-direction:column;gap:12px;box-shadow:0 2px 0 var(--line)}
+.sec h2{font-size:17px;margin:0;font-weight:800}
+.hint{font-size:14px;color:var(--soft);margin:0;line-height:1.4}
+.field{display:flex;flex-direction:column;gap:5px;font-weight:700;font-size:14px;min-width:0}
+.field input[type=text]{border:2px solid var(--line);border-radius:12px;padding:10px 12px;font-size:17px;font-weight:600;background:var(--bg);width:100%;min-width:0}
+.field input[type=text]:focus{outline:3px solid var(--ring);outline-offset:1px;border-color:var(--ring)}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.rowb{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.list{display:flex;flex-direction:column;gap:8px}
+.item{display:grid;grid-template-columns:56px minmax(0,1fr);gap:10px;align-items:center;border:2px solid var(--line);border-radius:16px;padding:8px}
+.thumb{width:56px;height:56px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:32px;overflow:hidden}
+.thumb img{width:100%;height:100%;object-fit:cover}
+.item b{display:block;overflow-wrap:anywhere}
+.item small{color:var(--soft);font-weight:600}
+.item .acts{grid-column:1/-1;display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.chk{display:inline-flex;gap:6px;align-items:center;font-weight:700;font-size:14px;cursor:pointer}
+.chk input{width:20px;height:20px;accent-color:var(--ring)}
+.emos{display:grid;grid-template-columns:repeat(auto-fill,minmax(46px,1fr));gap:6px}
+.emos button{font-size:26px;border:2px solid var(--line);background:var(--bg);border-radius:12px;height:46px;cursor:pointer;padding:0}
+.emos button.on{border-color:var(--ring);background:var(--glow)}
+.prev{height:150px;border-radius:16px;display:flex;align-items:center;justify-content:center;font-size:84px;overflow:hidden}
+.prev img{width:100%;height:100%;object-fit:contain}
+.rec{color:var(--warn);font-weight:800}
+.filebtn input{display:none}
+@media (max-width:480px){.row2{grid-template-columns:1fr}}
+@media (prefers-reduced-motion:reduce){.card{transition:none}.hold.holding::after{transition:none}}
+</style>
+</head>
+<body>
+
+<div class="app" id="app">
+  <main class="stage" id="stage" aria-live="off"></main>
+  <div class="bar">
+    <button class="btn" id="viewBtn" type="button"></button>
+    <div class="dots" id="dots" aria-hidden="true"></div>
+    <button class="btn" id="stepsBtn" type="button"></button>
+    <button class="btn hold" id="parentBtn" type="button"><span id="parentLbl"></span></button>
   </div>
-  <p class="note" id="note"></p>
 </div>
+<div class="panel" id="panel" hidden></div>
 
 <script>
-const CARDS = [
-  {id:"out",   emo:"🚪", ru:"Пойдём гулять!", key:"Гулять",  en:"Let's go out",       bg:"--c1"},
-  {id:"shoes", emo:"👟", ru:"Надень ботинки", key:"Ботинки", en:"Wear your shoes",    bg:"--c2"},
-  {id:"swim",  emo:"🏊", ru:"Пойдём плавать!", key:"Плавать", en:"Let's go swimming", bg:"--c3"},
-  {id:"eat",   emo:"🍽️", ru:"Давай кушать!", key:"Кушать",  en:"Let's eat",          bg:"--c4"},
-];
-const store = {
-  get(k){ try { return localStorage.getItem("kc_"+k); } catch(e){ return null; } },
-  set(k,v){ try { localStorage.setItem("kc_"+k,v); return true; } catch(e){ return false; } },
-  del(k){ try { localStorage.removeItem("kc_"+k); } catch(e){} }
+"use strict";
+/* ---------------- text for the two interface languages ---------------- */
+const T = {
+  ru:{ one:"▢ Одна", all:"▦ Все", steps:"▶ Шаги", parents:"⚙ Родителям",
+    forParents:"Для родителей", done:"✓ Готово", hello:"Здравствуйте", profile:"Профиль",
+    pname:"Ваше имя", cname:"Имя ребёнка", cards:"Карточки", add:"＋ Добавить карточку",
+    cardsHint:"Отметьте «По шагам», чтобы карточка играла в кнопке «По шагам» в этом порядке.",
+    step:"По шагам", edit:"Изменить", del:"Удалить", sure:"Точно удалить?", up:"Вверх", down:"Вниз",
+    today:"сегодня", week:"за 7 дней", taps:"нажатий",
+    settings:"Настройки", enLabels:"Показывать английские подписи", backup:"Сохранить копию (файл)",
+    restore:"Загрузить копию", reset:"Вернуть стартовые карточки", resetSure:"Вернуть? Ваши карточки останутся",
+    backupHint:"Копию можно открыть на другом телефоне или планшете: все карточки, фото и голос перенесутся.",
+    newCard:"Новая карточка", editCard:"Изменить карточку", phrase:"Фраза (по-русски)", phrasePh:"Например: Пойдём гулять!",
+    keyw:"Главное слово", keyPh:"Например: Гулять", enl:"Английская подпись (не обязательно)",
+    picture:"Картинка", photo:"📷 Фото", noPhoto:"Убрать фото", pickEmoji:"или выберите значок:",
+    voice:"Голос", record:"🎙 Записать голос", stop:"■ Стоп", recording:"Идёт запись…", upload:"📁 Файл со звуком",
+    play:"▶ Прослушать", noVoice:"Убрать запись", hasVoice:"Запись есть ✓", noVoiceYet:"Записи нет: будет говорить голос устройства.",
+    voiceHint:"Лучше всего ваш голос. Говорите медленно: сначала фразу, пауза, потом главное слово.",
+    save:"Сохранить", cancel:"Отмена", needPhrase:"Напишите фразу.",
+    noRu:"На этом устройстве нет русского голоса. Запишите свой голос в разделе для родителей.",
+    micNo:"Микрофон недоступен. Загрузите файл со звуком.", saved:"Сохранено", imported:"Копия загружена",
+    badFile:"Не получилось открыть этот файл.", tooBig:"Файл слишком большой.", holdHint:"Держите кнопку 1 секунду",
+    empty:"Карточек пока нет. Откройте «Родителям» и добавьте первую." },
+  en:{ one:"▢ One", all:"▦ All", steps:"▶ Steps", parents:"⚙ Parents",
+    forParents:"For parents", done:"✓ Done", hello:"Hello", profile:"Profile",
+    pname:"Your name", cname:"Child's name", cards:"Cards", add:"＋ Add a card",
+    cardsHint:"Tick \"In steps\" to include a card in the Steps button, in this order.",
+    step:"In steps", edit:"Edit", del:"Delete", sure:"Really delete?", up:"Up", down:"Down",
+    today:"today", week:"7 days", taps:"taps",
+    settings:"Settings", enLabels:"Show English labels", backup:"Save a backup (file)",
+    restore:"Load a backup", reset:"Restore starter cards", resetSure:"Restore? Your own cards stay",
+    backupHint:"A backup can be opened on another phone or tablet: all cards, photos and voice move with it.",
+    newCard:"New card", editCard:"Edit card", phrase:"Phrase (in Russian)", phrasePh:"For example: Пойдём гулять!",
+    keyw:"Key word", keyPh:"For example: Гулять", enl:"English label (optional)",
+    picture:"Picture", photo:"📷 Photo", noPhoto:"Remove photo", pickEmoji:"or pick an icon:",
+    voice:"Voice", record:"🎙 Record voice", stop:"■ Stop", recording:"Recording…", upload:"📁 Audio file",
+    play:"▶ Listen", noVoice:"Remove recording", hasVoice:"Recording saved ✓", noVoiceYet:"No recording: the device voice will speak.",
+    voiceHint:"Your own voice works best. Speak slowly: the phrase, a pause, then the key word.",
+    save:"Save", cancel:"Cancel", needPhrase:"Please write the phrase.",
+    noRu:"This device has no Russian voice. Record your voice in the parents area.",
+    micNo:"The microphone is not available. Upload an audio file instead.", saved:"Saved", imported:"Backup loaded",
+    badFile:"That file could not be opened.", tooBig:"That file is too big.", holdHint:"Hold the button for 1 second",
+    empty:"No cards yet. Open Parents and add the first one." }
 };
-const grid = document.getElementById("grid"), note = document.getElementById("note");
-let tts = null, ruVoice = null, busy = false, audioEl = null;
+const STARTER = [
+  {id:"out",   emo:"🚪", ru:"Пойдём гулять!",  key:"Гулять",  en:"Let's go out",      step:true},
+  {id:"shoes", emo:"👟", ru:"Надень ботинки",  key:"Ботинки", en:"Wear your shoes",   step:true},
+  {id:"swim",  emo:"🏊", ru:"Пойдём плавать!", key:"Плавать", en:"Let's go swimming", step:true},
+  {id:"eat",   emo:"🍽️", ru:"Давай кушать!",   key:"Кушать",  en:"Let's eat",         step:false}
+];
+const EMOJI = ["🚪","👟","🏊","🍽️","💧","🥤","🍎","🍌","🍞","🥛","🐴","🐄","🐕","🐈","🚽","🛁","🛏️","📺","🚗","🧸","⚽","🫧","📖","🎵","🤸","🙂","😢","🤕","👋","❤️","✋","➕","🆘","🏠","🌳","👕"];
+const TINTS = ["--c1","--c2","--c3","--c4","--c5","--c6"];
 
-function render(){
-  grid.innerHTML = "";
-  CARDS.forEach(c => {
-    const b = document.createElement("div");
-    b.className = "card"; b.setAttribute("role","button"); b.tabIndex = 0; b.id = "card-"+c.id; b.dataset.id = c.id;
-    b.addEventListener("keydown", e => { if ((e.key === "Enter" || e.key === " ") && e.target === b) { e.preventDefault(); say(c); } });
-    const photo = store.get("img_"+c.id), voice = store.get("aud_"+c.id);
-    b.innerHTML = `
-      <div class="pic" style="background:var(${c.bg})">${photo ? `<img alt="">` : `<span class="emo" aria-hidden="true">${c.emo}</span>`}</div>
-      <div class="ru"></div><div class="en"></div>
-      <div class="tools">
-        <label>📷 Photo<input type="file" accept="image/*" data-kind="img"></label>
-        <label>🎙 Mom's voice${voice ? " ✓" : ""}<input type="file" accept="audio/*" capture data-kind="aud"></label>
-        ${photo||voice ? `<label data-reset="1">Reset</label>` : ""}
-      </div>`;
-    if (photo) b.querySelector("img").src = photo;
-    b.querySelector(".ru").textContent = c.ru;
-    b.querySelector(".en").textContent = c.en;
-    b.querySelector(".pic img")?.setAttribute("alt", c.en);
-    b.addEventListener("click", e => {
-      if (e.target.closest(".tools")) {
-        if (e.target.closest("[data-reset]")) { store.del("img_"+c.id); store.del("aud_"+c.id); render(); }
-        e.stopPropagation(); return;
-      }
-      say(c);
+/* ---------------- storage: IndexedDB with an in-memory fallback ---------------- */
+const DB = (() => {
+  const mem = new Map(); let dbp = null;
+  function open(){
+    if (dbp) return dbp;
+    dbp = new Promise((res, rej) => {
+      try {
+        const r = indexedDB.open("karim-cards", 1);
+        r.onupgradeneeded = () => r.result.createObjectStore("kv");
+        r.onsuccess = () => res(r.result); r.onerror = () => rej(r.error);
+      } catch (e) { rej(e); }
     });
-    b.querySelectorAll("input").forEach(inp => inp.addEventListener("change", ev => upload(c, ev.target)));
-    grid.appendChild(b);
+    return dbp;
+  }
+  function tx(mode, fn){
+    return open().then(db => new Promise((res, rej) => {
+      const t = db.transaction("kv", mode), s = t.objectStore("kv"); const q = fn(s);
+      t.oncomplete = () => res(q && q.result); t.onerror = () => rej(t.error); t.onabort = () => rej(t.error);
+    }));
+  }
+  return {
+    async get(k){ try { const v = await tx("readonly", s => s.get(k)); return v === undefined ? (mem.has(k) ? mem.get(k) : null) : v; } catch(e){ return mem.has(k) ? mem.get(k) : null; } },
+    async set(k, v){ mem.set(k, v); try { await tx("readwrite", s => s.put(v, k)); return true; } catch(e){ return false; } },
+    async del(k){ mem.delete(k); try { await tx("readwrite", s => s.delete(k)); } catch(e){} }
+  };
+})();
+
+/* ---------------- state ---------------- */
+const S = { cards:[], profile:{parent:"", child:"Karim"}, set:{view:"one", en:true, lang:"ru"}, img:{}, aud:{}, taps:{}, cur:0 };
+const $ = id => document.getElementById(id);
+const stage = $("stage"), panel = $("panel");
+const t = k => (T[S.set.lang] || T.ru)[k] || k;
+const wait = ms => new Promise(r => setTimeout(r, ms));
+const esc = s => String(s == null ? "" : s).replace(/[&<>"']/g, m => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));
+const today = () => new Date().toISOString().slice(0, 10);
+let busy = false, audioEl = null, ruVoice = null, toastTimer = null;
+
+async function load(){
+  const [cards, profile, set, taps] = await Promise.all([DB.get("cards"), DB.get("profile"), DB.get("settings"), DB.get("taps")]);
+  S.cards = Array.isArray(cards) ? cards : STARTER.map(c => ({...c}));
+  if (profile) S.profile = {...S.profile, ...profile};
+  if (set) S.set = {...S.set, ...set};
+  if (taps) S.taps = taps;
+  await Promise.all(S.cards.map(async c => {
+    let i = await DB.get("img_" + c.id), a = await DB.get("aud_" + c.id);
+    try { // carry over photos and voice saved by the first version of the app
+      if (!i) { const o = localStorage.getItem("kc_img_" + c.id); if (o) { i = o; await DB.set("img_" + c.id, o); } }
+      if (!a) { const o = localStorage.getItem("kc_aud_" + c.id); if (o) { a = o; await DB.set("aud_" + c.id, o); } }
+    } catch(e){}
+    if (i) S.img[c.id] = i; if (a) S.aud[c.id] = a;
+  }));
+}
+const saveCards = () => DB.set("cards", S.cards);
+const saveSet = () => DB.set("settings", S.set);
+const tint = c => TINTS[Math.max(0, S.cards.indexOf(c)) % TINTS.length];
+
+/* ---------------- child view ---------------- */
+function cardEl(c){
+  const el = document.createElement("div");
+  el.className = "card"; el.setAttribute("role", "button"); el.tabIndex = 0; el.dataset.id = c.id;
+  el.innerHTML = `<div class="pic" style="background:var(${tint(c)})">${S.img[c.id] ? `<img alt="">` : `<span class="emo" aria-hidden="true">${esc(c.emo || "🙂")}</span>`}</div><div class="ru"></div><div class="en"></div>`;
+  if (S.img[c.id]) { const im = el.querySelector("img"); im.src = S.img[c.id]; im.alt = c.en || c.ru; }
+  el.querySelector(".ru").textContent = c.ru;
+  el.querySelector(".en").textContent = c.en || "";
+  el.addEventListener("click", () => say(c));
+  el.addEventListener("keydown", e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); say(c); } });
+  return el;
+}
+function render(){
+  document.body.classList.toggle("hide-en", !S.set.en);
+  document.documentElement.lang = S.set.lang;
+  document.title = (S.profile.child || "Karim") + "'s Talking Cards";
+  $("viewBtn").textContent = S.set.view === "one" ? t("all") : t("one");
+  $("stepsBtn").textContent = t("steps");
+  $("stepsBtn").hidden = S.cards.filter(c => c.step).length < 2;
+  $("parentLbl").textContent = t("parents");
+  stage.innerHTML = "";
+  const dots = $("dots"); dots.innerHTML = "";
+  if (!S.cards.length) { stage.innerHTML = `<div class="card" style="height:100%;cursor:default"><div class="ru">${esc(t("empty"))}</div></div>`; return; }
+  S.cur = Math.min(Math.max(0, S.cur), S.cards.length - 1);
+  if (S.set.view === "one") {
+    const box = document.createElement("div"); box.className = "one";
+    const prev = document.createElement("button"); prev.className = "nav"; prev.type = "button"; prev.textContent = "‹"; prev.setAttribute("aria-label", "Previous");
+    const next = document.createElement("button"); next.className = "nav"; next.type = "button"; next.textContent = "›"; next.setAttribute("aria-label", "Next");
+    prev.disabled = S.cards.length < 2; next.disabled = S.cards.length < 2;
+    prev.onclick = () => go(-1); next.onclick = () => go(1);
+    box.append(prev, cardEl(S.cards[S.cur]), next); stage.append(box);
+    if (S.cards.length <= 14) S.cards.forEach((c, i) => { const d = document.createElement("span"); d.className = "dot" + (i === S.cur ? " on" : ""); dots.append(d); });
+  } else {
+    const g = document.createElement("div"); g.className = "grid";
+    S.cards.forEach(c => g.append(cardEl(c))); stage.append(g); layoutGrid();
+  }
+}
+function layoutGrid(){
+  const g = stage.querySelector(".grid"); if (!g) return;
+  const W = stage.clientWidth, H = stage.clientHeight, n = S.cards.length, gap = 12;
+  let cols = W < 560 ? 2 : W < 1000 ? 3 : 4;
+  if (W > H * 1.2 && n <= 4) cols = n;                 // wide screen, few cards: one row
+  else if (n <= 4) cols = n === 1 ? 1 : 2;             // tall screen, few cards: 2 by 2
+  cols = Math.min(cols, n);
+  const rows = Math.ceil(n / cols), rowsShown = Math.min(2, rows);
+  // when there are more rows than fit, show a sliver of the next row so it is clear the list scrolls
+  const rowH = Math.max(120, Math.floor(rows > 2 ? (H - gap * 2) / 2.18 : (H - gap * (rowsShown - 1)) / rowsShown));
+  g.style.gridTemplateColumns = `repeat(${cols}, minmax(0, 1fr))`;
+  g.style.gridAutoRows = rowH + "px";
+}
+function go(d){ if (busy || S.cards.length < 2) return; S.cur = (S.cur + d + S.cards.length) % S.cards.length; render(); }
+function mark(id){ document.querySelectorAll(".card").forEach(x => x.classList.toggle("active", x.dataset.id === id)); }
+function toast(msg){
+  stage.querySelector(".toast")?.remove(); clearTimeout(toastTimer);
+  const el = document.createElement("div"); el.className = "toast"; el.textContent = msg; stage.append(el);
+  toastTimer = setTimeout(() => el.remove(), 3500);
+}
+
+/* ---------------- speaking ---------------- */
+function pickVoice(){ try { ruVoice = speechSynthesis.getVoices().find(v => /^ru/i.test(v.lang)) || null; } catch(e){} }
+function playAudio(src){
+  return new Promise(res => {
+    if (audioEl) { try { audioEl.pause(); } catch(e){} }
+    audioEl = new Audio(src); audioEl.onended = res; audioEl.onerror = res;
+    audioEl.play().catch(res);
   });
 }
-
-function upload(c, inp){
-  const f = inp.files && inp.files[0]; if (!f) return;
-  if (inp.dataset.kind === "img") {
-    const img = new Image(), url = URL.createObjectURL(f);
-    img.onload = () => {
-      const s = Math.min(1, 700 / Math.max(img.width, img.height));
-      const cv = document.createElement("canvas"); cv.width = img.width*s; cv.height = img.height*s;
-      cv.getContext("2d").drawImage(img, 0, 0, cv.width, cv.height);
-      if (!store.set("img_"+c.id, cv.toDataURL("image/jpeg", .82))) note.textContent = "The photo could not be saved on this device. Try a smaller one.";
-      URL.revokeObjectURL(url); render();
-    };
-    img.src = url;
-  } else {
-    if (f.size > 1.5e6) { note.textContent = "That recording is too long. Keep it under about 10 seconds."; return; }
-    const r = new FileReader();
-    r.onload = () => { if (!store.set("aud_"+c.id, r.result)) note.textContent = "The voice could not be saved on this device. Try a shorter recording."; render(); };
-    r.readAsDataURL(f);
-  }
-}
-
-function mark(id){
-  document.querySelectorAll(".card").forEach(x => x.classList.toggle("active", x.dataset.id === id));
-}
-const wait = ms => new Promise(r => setTimeout(r, ms));
-
 async function speak(c){
-  const rec = store.get("aud_"+c.id);
-  if (rec) {
-    if (audioEl) audioEl.pause();
-    audioEl = new Audio(rec);
-    await new Promise(res => { audioEl.onended = res; audioEl.onerror = res; audioEl.play().catch(res); });
-    return;
-  }
-  if (tts) {
-    try {
-      await tts.speak([{text:c.ru, language:"ru", rate:0.75}, {text:c.key + ".", language:"ru", rate:0.7}]);
-      return;
-    } catch(e) { if (e && e.code === "viewer_stopped") return; }
-  }
+  if (S.aud[c.id]) return playAudio(S.aud[c.id]);
   if ("speechSynthesis" in window && ruVoice) {
     speechSynthesis.cancel();
-    for (const t of [c.ru, c.key]) {
+    for (const txt of [c.ru, c.key].filter(Boolean)) {
       await new Promise(res => {
-        const u = new SpeechSynthesisUtterance(t); u.voice = ruVoice; u.lang = "ru-RU"; u.rate = 0.7;
-        u.onend = res; u.onerror = res; speechSynthesis.speak(u);
+        const u = new SpeechSynthesisUtterance(txt); u.voice = ruVoice; u.lang = "ru-RU"; u.rate = 0.7;
+        const guard = setTimeout(res, 8000);
+        u.onend = u.onerror = () => { clearTimeout(guard); res(); };
+        speechSynthesis.speak(u);
       });
-      await wait(700);
+      await wait(600);
     }
     return;
   }
-  note.textContent = "No Russian voice on this device. Turn on Grown-up mode and add Mom's voice for each card.";
-  await wait(1500);
+  toast(t("noRu")); await wait(1200);
 }
-
 async function say(c){
   if (busy) return;
   busy = true; mark(c.id);
-  try { await speak(c); } finally { await wait(400); mark(null); busy = false; }
+  const d = today(); (S.taps[c.id] ||= {})[d] = (S.taps[c.id][d] || 0) + 1; DB.set("taps", S.taps);
+  try { await speak(c); } finally { await wait(350); mark(null); busy = false; }
 }
-
-document.getElementById("steps").addEventListener("click", async () => {
+async function playSteps(){
   if (busy) return;
-  for (const id of ["out","shoes","swim"]) { await say(CARDS.find(c => c.id === id)); await wait(1500); }
-});
-document.getElementById("enBtn").addEventListener("click", e => {
-  const off = document.body.classList.toggle("hide-en"); e.currentTarget.classList.toggle("on", !off); store.set("en", off ? "0" : "1");
-});
-document.getElementById("grownBtn").addEventListener("click", e => {
-  const on = document.body.classList.toggle("grown"); e.currentTarget.classList.toggle("on", on);
-  note.textContent = on ? "Tap 📷 to use a real photo of his things. Tap 🎙 to add a short recording of Mom saying the words slowly." : "";
-});
-document.getElementById("fsBtn").addEventListener("click", () => {
-  const el = document.documentElement;
-  (el.requestFullscreen ? el.requestFullscreen() : Promise.reject()).catch(() => { note.textContent = "Full screen is not available here."; });
-});
-
-function pickVoice(){
-  try { const v = speechSynthesis.getVoices(); ruVoice = v.find(x => /^ru/i.test(x.lang)) || null; } catch(e){}
+  const seq = S.cards.filter(c => c.step);
+  for (const c of seq) {
+    if (S.set.view === "one") { S.cur = S.cards.indexOf(c); render(); }
+    await say(c); await wait(1300);
+  }
 }
-if ("speechSynthesis" in window) { pickVoice(); speechSynthesis.onvoiceschanged = pickVoice; }
-if (store.get("en") === "0") document.body.classList.add("hide-en"); else document.getElementById("enBtn").classList.add("on");
-try { navigator.wakeLock && navigator.wakeLock.request("screen").catch(()=>{}); } catch(e){}
-render();
-(window.claude && window.claude.use ? window.claude.use("tts") : Promise.resolve(null)).then(t => { tts = t; }).catch(() => {});
-</script>
 
-</body></html>
+/* ---------------- parent panel ---------------- */
+function tapStats(id){
+  const m = S.taps[id] || {}, d0 = today(); let wk = 0;
+  for (let i = 0; i < 7; i++) { const d = new Date(Date.now() - i * 864e5).toISOString().slice(0, 10); wk += m[d] || 0; }
+  return `${t("today")}: ${m[d0] || 0} · ${t("week")}: ${wk}`;
+}
+function openPanel(){ panel.hidden = false; $("app").setAttribute("inert", ""); drawPanel(); panel.scrollTop = 0; }
+function closePanel(){ panel.hidden = true; $("app").removeAttribute("inert"); render(); }
+function drawPanel(){
+  const p = S.profile;
+  panel.innerHTML = `<div class="wrap">
+    <div class="phead">
+      <h1>${esc(t("forParents"))}</h1>
+      <div class="rowb">
+        <button class="btn small ${S.set.lang === "ru" ? "on" : ""}" data-lang="ru" type="button">Русский</button>
+        <button class="btn small ${S.set.lang === "en" ? "on" : ""}" data-lang="en" type="button">English</button>
+        <button class="btn primary" id="pDone" type="button">${esc(t("done"))}</button>
+      </div>
+    </div>
+    <section class="sec">
+      <h2 id="helloLine"></h2>
+      <div class="row2">
+        <label class="field">${esc(t("pname"))}<input type="text" id="pName" maxlength="40" autocomplete="off"></label>
+        <label class="field">${esc(t("cname"))}<input type="text" id="cName" maxlength="40" autocomplete="off"></label>
+      </div>
+    </section>
+    <section class="sec">
+      <h2>${esc(t("cards"))} (${S.cards.length})</h2>
+      <p class="hint">${esc(t("cardsHint"))}</p>
+      <div class="list" id="pList"></div>
+      <div class="rowb"><button class="btn primary" id="pAdd" type="button">${esc(t("add"))}</button></div>
+    </section>
+    <section class="sec">
+      <h2>${esc(t("settings"))}</h2>
+      <label class="chk"><input type="checkbox" id="pEn" ${S.set.en ? "checked" : ""}> ${esc(t("enLabels"))}</label>
+      <p class="hint">${esc(t("backupHint"))}</p>
+      <div class="rowb">
+        <button class="btn small" id="pExport" type="button">${esc(t("backup"))}</button>
+        <label class="btn small filebtn">${esc(t("restore"))}<input type="file" id="pImport" accept="application/json,.json"></label>
+        <button class="btn small" id="pReset" type="button">${esc(t("reset"))}</button>
+      </div>
+      <p class="hint" id="pMsg" role="status"></p>
+    </section>
+  </div>`;
+  const hello = () => { $("helloLine").textContent = p.parent ? `${t("hello")}, ${p.parent}!` : t("profile"); };
+  hello();
+  $("pName").value = p.parent || ""; $("cName").value = p.child || "";
+  $("pName").oninput = e => { p.parent = e.target.value.trim(); DB.set("profile", p); hello(); };
+  $("cName").oninput = e => { p.child = e.target.value.trim(); DB.set("profile", p); };
+  panel.querySelectorAll("[data-lang]").forEach(b => b.onclick = () => { S.set.lang = b.dataset.lang; saveSet(); drawPanel(); });
+  $("pDone").onclick = closePanel;
+  $("pEn").onchange = e => { S.set.en = e.target.checked; saveSet(); };
+  $("pAdd").onclick = () => drawEditor(null);
+  $("pExport").onclick = exportAll;
+  $("pImport").onchange = e => importAll(e.target.files[0]);
+  $("pReset").onclick = e => {
+    const b = e.currentTarget;
+    if (!b.dataset.armed) { b.dataset.armed = "1"; b.textContent = t("resetSure"); b.classList.add("danger"); return; }
+    const have = new Set(S.cards.map(c => c.id));
+    S.cards = [...STARTER.filter(c => !have.has(c.id)).map(c => ({...c})), ...S.cards]; saveCards(); drawPanel();
+  };
+  const list = $("pList");
+  S.cards.forEach((c, i) => {
+    const row = document.createElement("div"); row.className = "item";
+    row.innerHTML = `<div class="thumb" style="background:var(${tint(c)})">${S.img[c.id] ? `<img alt="">` : esc(c.emo || "🙂")}</div>
+      <div><b></b><small>${esc(tapStats(c.id))}${S.aud[c.id] ? " · 🎙" : ""}</small></div>
+      <div class="acts">
+        <button class="btn small" data-a="edit" type="button">${esc(t("edit"))}</button>
+        <button class="btn small" data-a="up" type="button" aria-label="${esc(t("up"))}" ${i === 0 ? "disabled" : ""}>↑</button>
+        <button class="btn small" data-a="down" type="button" aria-label="${esc(t("down"))}" ${i === S.cards.length - 1 ? "disabled" : ""}>↓</button>
+        <label class="chk"><input type="checkbox" data-a="step" ${c.step ? "checked" : ""}> ${esc(t("step"))}</label>
+        <button class="btn small danger" data-a="del" type="button">${esc(t("del"))}</button>
+      </div>`;
+    if (S.img[c.id]) row.querySelector("img").src = S.img[c.id];
+    row.querySelector("b").textContent = c.ru;
+    row.querySelector('[data-a="edit"]').onclick = () => drawEditor(c);
+    row.querySelector('[data-a="up"]').onclick = () => { S.cards.splice(i - 1, 0, S.cards.splice(i, 1)[0]); saveCards(); drawPanel(); };
+    row.querySelector('[data-a="down"]').onclick = () => { S.cards.splice(i + 1, 0, S.cards.splice(i, 1)[0]); saveCards(); drawPanel(); };
+    row.querySelector('[data-a="step"]').onchange = e => { c.step = e.target.checked; saveCards(); };
+    row.querySelector('[data-a="del"]').onclick = e => {
+      const b = e.currentTarget;
+      if (!b.dataset.armed) { b.dataset.armed = "1"; b.textContent = t("sure"); return; }
+      S.cards.splice(i, 1); delete S.img[c.id]; delete S.aud[c.id];
+      DB.del("img_" + c.id); DB.del("aud_" + c.id); saveCards(); drawPanel();
+    };
+    list.append(row);
+  });
+}
+
+/* ---------------- card editor ---------------- */
+let rec = null;
+function drawEditor(card){
+  const isNew = !card;
+  const d = isNew ? {id:"c" + Date.now().toString(36), ru:"", key:"", en:"", emo:"🙂", step:false, img:null, aud:null}
+                  : {...card, img:S.img[card.id] || null, aud:S.aud[card.id] || null};
+  panel.innerHTML = `<div class="wrap">
+    <div class="phead"><h1>${esc(t(isNew ? "newCard" : "editCard"))}</h1></div>
+    <section class="sec">
+      <label class="field">${esc(t("phrase"))}<input type="text" id="eRu" maxlength="60" placeholder="${esc(t("phrasePh"))}" autocomplete="off"></label>
+      <div class="row2">
+        <label class="field">${esc(t("keyw"))}<input type="text" id="eKey" maxlength="30" placeholder="${esc(t("keyPh"))}" autocomplete="off"></label>
+        <label class="field">${esc(t("enl"))}<input type="text" id="eEn" maxlength="40" autocomplete="off"></label>
+      </div>
+    </section>
+    <section class="sec">
+      <h2>${esc(t("picture"))}</h2>
+      <div class="prev" id="ePrev"></div>
+      <div class="rowb">
+        <label class="btn small filebtn">${esc(t("photo"))}<input type="file" id="ePhoto" accept="image/*"></label>
+        <button class="btn small" id="eNoPhoto" type="button">${esc(t("noPhoto"))}</button>
+      </div>
+      <p class="hint">${esc(t("pickEmoji"))}</p>
+      <div class="emos" id="eEmos"></div>
+    </section>
+    <section class="sec">
+      <h2>${esc(t("voice"))}</h2>
+      <p class="hint">${esc(t("voiceHint"))}</p>
+      <div class="rowb">
+        <button class="btn small" id="eRec" type="button">${esc(t("record"))}</button>
+        <label class="btn small filebtn">${esc(t("upload"))}<input type="file" id="eAud" accept="audio/*"></label>
+        <button class="btn small" id="ePlay" type="button">${esc(t("play"))}</button>
+        <button class="btn small" id="eNoAud" type="button">${esc(t("noVoice"))}</button>
+      </div>
+      <p class="hint" id="eVoiceMsg" role="status"></p>
+    </section>
+    <p class="hint rec" id="eErr" role="alert"></p>
+    <div class="rowb">
+      <button class="btn primary" id="eSave" type="button">${esc(t("save"))}</button>
+      <button class="btn" id="eCancel" type="button">${esc(t("cancel"))}</button>
+    </div>
+  </div>`;
+  panel.scrollTop = 0;
+  $("eRu").value = d.ru; $("eKey").value = d.key || ""; $("eEn").value = d.en || "";
+  const bg = `var(${card ? tint(card) : TINTS[S.cards.length % TINTS.length]})`;
+  function pic(){
+    const pv = $("ePrev"); pv.style.background = bg; pv.innerHTML = "";
+    if (d.img) { const im = new Image(); im.src = d.img; im.alt = ""; pv.append(im); } else pv.textContent = d.emo;
+    $("eNoPhoto").hidden = !d.img;
+    $("eEmos").querySelectorAll("button").forEach(b => b.classList.toggle("on", !d.img && b.textContent === d.emo));
+  }
+  function voice(msg){
+    $("ePlay").hidden = !d.aud; $("eNoAud").hidden = !d.aud;
+    $("eVoiceMsg").textContent = msg || (d.aud ? t("hasVoice") : t("noVoiceYet"));
+  }
+  EMOJI.forEach(e => { const b = document.createElement("button"); b.type = "button"; b.textContent = e; b.onclick = () => { d.emo = e; d.img = null; pic(); }; $("eEmos").append(b); });
+  pic(); voice();
+  $("ePhoto").onchange = e => { const f = e.target.files[0]; if (f) shrink(f).then(u => { d.img = u; pic(); }).catch(() => { $("eErr").textContent = t("badFile"); }); };
+  $("eNoPhoto").onclick = () => { d.img = null; pic(); };
+  $("eAud").onchange = e => {
+    const f = e.target.files[0]; if (!f) return;
+    if (f.size > 3e6) { voice(t("tooBig")); return; }
+    const r = new FileReader(); r.onload = () => { d.aud = r.result; voice(); }; r.readAsDataURL(f);
+  };
+  $("ePlay").onclick = () => { if (d.aud) playAudio(d.aud); };
+  $("eNoAud").onclick = () => { d.aud = null; voice(); };
+  $("eRec").onclick = async () => {
+    if (rec) { rec.stop(); return; }
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({audio:true});
+      const chunks = []; rec = new MediaRecorder(stream);
+      rec.ondataavailable = e => { if (e.data.size) chunks.push(e.data); };
+      rec.onstop = () => {
+        stream.getTracks().forEach(x => x.stop()); clearTimeout(rec._t); rec = null;
+        if ($("eRec")) { $("eRec").textContent = t("record"); $("eRec").classList.remove("danger"); }
+        const r = new FileReader(); r.onload = () => { d.aud = r.result; if ($("eVoiceMsg")) voice(); };
+        r.readAsDataURL(new Blob(chunks, {type: chunks[0] ? chunks[0].type : "audio/webm"}));
+      };
+      rec.start(); rec._t = setTimeout(() => rec && rec.stop(), 15000);
+      $("eRec").textContent = t("stop"); $("eRec").classList.add("danger"); voice(t("recording"));
+    } catch (e) { rec = null; voice(t("micNo")); }
+  };
+  const leave = () => { if (rec) { try { rec.stop(); } catch(e){} } drawPanel(); };
+  $("eCancel").onclick = leave;
+  $("eSave").onclick = async () => {
+    const ru = $("eRu").value.trim();
+    if (!ru) { $("eErr").textContent = t("needPhrase"); $("eRu").focus(); return; }
+    if (rec) { try { rec.stop(); } catch(e){} await wait(400); }
+    const c = {id:d.id, ru, key:$("eKey").value.trim(), en:$("eEn").value.trim(), emo:d.emo, step:!!d.step};
+    const i = S.cards.findIndex(x => x.id === c.id);
+    if (i >= 0) S.cards[i] = c; else { S.cards.push(c); S.cur = S.cards.length - 1; }
+    if (d.img) { S.img[c.id] = d.img; await DB.set("img_" + c.id, d.img); } else { delete S.img[c.id]; DB.del("img_" + c.id); }
+    if (d.aud) { S.aud[c.id] = d.aud; await DB.set("aud_" + c.id, d.aud); } else { delete S.aud[c.id]; DB.del("aud_" + c.id); }
+    await saveCards(); drawPanel();
+  };
+  $("eRu").focus();
+}
+function shrink(file){
+  return new Promise((res, rej) => {
+    const url = URL.createObjectURL(file), im = new Image();
+    im.onload = () => {
+      const s = Math.min(1, 1100 / Math.max(im.width, im.height));
+      const cv = document.createElement("canvas"); cv.width = Math.round(im.width * s); cv.height = Math.round(im.height * s);
+      cv.getContext("2d").drawImage(im, 0, 0, cv.width, cv.height);
+      URL.revokeObjectURL(url); res(cv.toDataURL("image/jpeg", .85));
+    };
+    im.onerror = () => { URL.revokeObjectURL(url); rej(); };
+    im.src = url;
+  });
+}
+
+/* ---------------- backup ---------------- */
+function exportAll(){
+  const data = {app:"karim-cards", v:2, profile:S.profile, settings:S.set, cards:S.cards, img:S.img, aud:S.aud};
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(new Blob([JSON.stringify(data)], {type:"application/json"}));
+  a.download = "talking-cards-" + today() + ".json"; document.body.append(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(a.href), 5000);
+  $("pMsg").textContent = t("saved");
+}
+async function importAll(file){
+  if (!file) return;
+  try {
+    const data = JSON.parse(await file.text());
+    if (data.app !== "karim-cards" || !Array.isArray(data.cards)) throw 0;
+    for (const c of S.cards) { DB.del("img_" + c.id); DB.del("aud_" + c.id); }
+    S.cards = data.cards.filter(c => c && c.id && c.ru).map(c => ({id:String(c.id), ru:String(c.ru), key:String(c.key || ""), en:String(c.en || ""), emo:String(c.emo || "🙂"), step:!!c.step}));
+    S.img = {}; S.aud = {};
+    const ok = v => typeof v === "string" && /^data:(image|audio|video)\//.test(v);
+    for (const c of S.cards) {
+      if (data.img && ok(data.img[c.id])) { S.img[c.id] = data.img[c.id]; await DB.set("img_" + c.id, S.img[c.id]); }
+      if (data.aud && ok(data.aud[c.id])) { S.aud[c.id] = data.aud[c.id]; await DB.set("aud_" + c.id, S.aud[c.id]); }
+    }
+    if (data.profile) { S.profile = {parent:String(data.profile.parent || ""), child:String(data.profile.child || "")}; await DB.set("profile", S.profile); }
+    await saveCards(); drawPanel(); $("pMsg").textContent = t("imported");
+  } catch (e) { $("pMsg").textContent = t("badFile"); }
+}
+
+/* ---------------- wiring ---------------- */
+$("viewBtn").onclick = () => { if (busy) return; S.set.view = S.set.view === "one" ? "all" : "one"; saveSet(); render(); };
+$("stepsBtn").onclick = playSteps;
+(() => { // the Parents button opens only after a 1.2 second hold, so the child does not open it by accident
+  const b = $("parentBtn"); let timer = null;
+  const start = () => { b.classList.add("holding"); timer = setTimeout(() => { stop(); openPanel(); }, 1200); };
+  const stop = () => { b.classList.remove("holding"); clearTimeout(timer); timer = null; };
+  b.addEventListener("pointerdown", start);
+  ["pointerup", "pointerleave", "pointercancel"].forEach(ev => b.addEventListener(ev, () => { if (timer) { stop(); toast(t("holdHint")); } }));
+  b.addEventListener("contextmenu", e => e.preventDefault());
+  b.addEventListener("keydown", e => { if (e.key === "Enter") openPanel(); });
+})();
+(() => { // swipe left or right in one-card view
+  let x0 = null, y0 = 0;
+  stage.addEventListener("pointerdown", e => { x0 = e.clientX; y0 = e.clientY; });
+  stage.addEventListener("pointerup", e => {
+    if (x0 == null || S.set.view !== "one") { x0 = null; return; }
+    const dx = e.clientX - x0, dy = e.clientY - y0; x0 = null;
+    if (Math.abs(dx) > 60 && Math.abs(dx) > Math.abs(dy) * 1.5) go(dx < 0 ? 1 : -1);
+  });
+})();
+document.addEventListener("keydown", e => {
+  if (!panel.hidden || S.set.view !== "one") return;
+  if (e.key === "ArrowRight") go(1); if (e.key === "ArrowLeft") go(-1);
+});
+window.addEventListener("resize", layoutGrid);
+if ("speechSynthesis" in window) { pickVoice(); speechSynthesis.onvoiceschanged = pickVoice; }
+try { navigator.wakeLock && navigator.wakeLock.request("screen").catch(() => {}); } catch(e){}
+load().then(render, render);
+</script>
+</body>
+</html>
