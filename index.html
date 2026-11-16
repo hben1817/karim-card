@@ -48,6 +48,35 @@ button,input,select{font:inherit;color:inherit}
 .one .ru{font-size:clamp(26px,7vmin,72px)}
 .one .en{font-size:clamp(14px,2.8vmin,26px)}
 .hide-en .en{display:none}
+.pair{height:100%;display:grid;gap:10px;grid-template-columns:1fr;grid-template-rows:minmax(0,1fr) auto minmax(0,1fr)}
+.pair .mid{display:flex;align-items:center;justify-content:center;gap:10px;font-weight:800;color:var(--soft);font-size:clamp(14px,2.6vmin,22px);text-align:center}
+.pair .mid b{font-size:clamp(26px,5vmin,48px);color:var(--ring);line-height:1}
+.pair .card .tagc{position:absolute;top:8px;left:12px;font-weight:800;font-size:clamp(12px,2.2vmin,18px);color:var(--soft);text-transform:uppercase;letter-spacing:.06em}
+.pair .card.dim{opacity:.35}
+.pair .card.big{border-color:var(--ring)}
+.pair .ru{font-size:clamp(22px,5.6vmin,56px)}
+.pair .pic .emo{font-size:min(30vmin,260px)}
+.ar-h{display:none}@media (min-aspect-ratio:11/10){.ar-h{display:inline}.ar-v{display:none}}
+.pair .ask{max-width:16ch;line-height:1.25}
+.ask{font-weight:800;text-align:center;font-size:clamp(14px,2.6vmin,22px);color:var(--soft);min-height:1.2em}
+@media (min-aspect-ratio:11/10){.pair{grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);grid-template-rows:1fr}.pair .mid{flex-direction:column}}
+.menu{position:absolute;inset:0;z-index:6;background:var(--bg);display:grid;gap:12px;grid-template-columns:1fr 1fr;grid-auto-rows:1fr}
+.menu button{border:4px solid transparent;border-radius:26px;background:var(--card);box-shadow:0 2px 0 var(--line);cursor:pointer;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;padding:10px;font-weight:800;font-size:clamp(18px,4vmin,34px);text-align:center;min-width:0}
+.menu button.on{border-color:var(--ring);background:var(--glow)}
+.menu button span{font-size:clamp(40px,11vmin,96px);line-height:1}
+.menu button small{font-weight:600;font-size:clamp(12px,2vmin,17px);color:var(--soft)}
+.menu button:focus-visible{outline:4px solid var(--ring);outline-offset:-4px}
+.menu button:disabled{opacity:.35;cursor:default}
+.lbl{margin-left:4px}
+@media (max-width:440px){.lbl{display:none}.btn{padding:8px 12px}}
+.tip{font-size:13.5px;color:var(--soft);line-height:1.35;margin:4px 0 0}
+.coach{background:var(--glow);border-radius:16px;padding:12px 14px;font-size:15px;line-height:1.45}
+.coach ol{margin:6px 0 0;padding-left:20px}
+.field select,.field textarea{border:2px solid var(--line);border-radius:12px;padding:10px 12px;font-size:16px;font-weight:600;background:var(--bg);width:100%;min-width:0}
+.field textarea{resize:vertical;min-height:70px;font-family:inherit}
+.field select:focus,.field textarea:focus{outline:3px solid var(--ring);outline-offset:1px;border-color:var(--ring)}
+.badge{display:inline-block;font-size:12px;font-weight:800;background:var(--glow);border-radius:999px;padding:2px 8px;margin-left:6px;vertical-align:middle}
 .nav{width:clamp(44px,9vmin,84px);border:0;border-radius:22px;background:var(--card);box-shadow:0 2px 0 var(--line);
   font-size:clamp(28px,6vmin,56px);font-weight:800;cursor:pointer;color:var(--ring);display:flex;align-items:center;justify-content:center}
 .nav:focus-visible{outline:4px solid var(--ring)}
@@ -111,6 +140,7 @@ button,input,select{font:inherit;color:inherit}
     <button class="btn" id="viewBtn" type="button"></button>
     <div class="dots" id="dots" aria-hidden="true"></div>
     <button class="btn" id="stepsBtn" type="button"></button>
+    <button class="btn" id="modeBtn" type="button" aria-haspopup="true"></button>
     <button class="btn hold" id="parentBtn" type="button"><span id="parentLbl"></span></button>
   </div>
 </div>
@@ -120,7 +150,10 @@ button,input,select{font:inherit;color:inherit}
 "use strict";
 /* ---------------- text for the two interface languages ---------------- */
 const T = {
-  ru:{ one:"▢ Одна", all:"▦ Все", steps:"▶ Шаги", parents:"⚙ Родителям",
+  ru:{ one:"Одна", all:"Все", steps:"Шаги", parents:"Родителям", modes:"Режим", mCards:"Карточки", mWords:"Слова", mChoice:"Выбор", mNext:"Сначала-потом",
+    mCardsS:"мои картинки", mWordsS:"ещё, помоги, нет…", mChoiceS:"выбери одно из двух", mNextS:"что за чем", first:"Сначала", then:"Потом", done2:"✓ Сделано", again:"↺ Сначала", askA:"Спросите:", or:"или", needTwo:"Выберите две карточки в «Родителям».", back:"Закрыть",
+    coachTitle:"Как заниматься (10 минут в день)", c1:"Скажите слово медленно и ясно.", c2:"Подождите 5–10 секунд. Не подсказывайте.", c3:"Любая попытка засчитывается: звук, жест, нажатие, слово.", c4:"Сразу дайте то, что он просил, и похвалите.", c5:"Нажмите карточку вместе с ним и повторите слово.",
+    modesSec:"Режимы", choiceSet:"Выбор из двух", nextSet:"Сначала-потом", cA:"Первая", cB:"Вторая", nF:"Сначала", nT:"Потом", group:"Где показывать", gCards:"Карточки", gWords:"Слова", tipL:"Подсказка для взрослого (не обязательно)", tipPh:"Что сказать, как подождать, чем наградить", noneSel:"не выбрано",
     forParents:"Для родителей", done:"✓ Готово", hello:"Здравствуйте", profile:"Профиль",
     pname:"Ваше имя", cname:"Имя ребёнка", cards:"Карточки", add:"＋ Добавить карточку",
     cardsHint:"Отметьте «По шагам», чтобы карточка играла в кнопке «По шагам» в этом порядке.",
@@ -140,7 +173,10 @@ const T = {
     micNo:"Микрофон недоступен. Загрузите файл со звуком.", saved:"Сохранено", imported:"Копия загружена",
     badFile:"Не получилось открыть этот файл.", tooBig:"Файл слишком большой.", holdHint:"Держите кнопку 1 секунду",
     empty:"Карточек пока нет. Откройте «Родителям» и добавьте первую." },
-  en:{ one:"▢ One", all:"▦ All", steps:"▶ Steps", parents:"⚙ Parents",
+  en:{ one:"One", all:"All", steps:"Steps", parents:"Parents", modes:"Mode", mCards:"Cards", mWords:"Words", mChoice:"Choice", mNext:"First-Then",
+    mCardsS:"my pictures", mWordsS:"more, help, no…", mChoiceS:"pick one of two", mNextS:"what comes next", first:"First", then:"Then", done2:"✓ Done", again:"↺ Again", askA:"Ask:", or:"or", needTwo:"Pick two cards in Parents first.", back:"Close",
+    coachTitle:"How to practise (10 minutes a day)", c1:"Say the word slowly and clearly.", c2:"Wait 5 to 10 seconds. Do not prompt.", c3:"Any attempt counts: a sound, a gesture, a tap, a word.", c4:"Give him what he asked for right away and praise him.", c5:"Press the card together with him and repeat the word.",
+    modesSec:"Modes", choiceSet:"Choice of two", nextSet:"First-Then", cA:"First card", cB:"Second card", nF:"First", nT:"Then", group:"Show in", gCards:"Cards", gWords:"Words", tipL:"Tip for the adult (optional)", tipPh:"What to say, how long to wait, how to reward", noneSel:"not chosen",
     forParents:"For parents", done:"✓ Done", hello:"Hello", profile:"Profile",
     pname:"Your name", cname:"Child's name", cards:"Cards", add:"＋ Add a card",
     cardsHint:"Tick \"In steps\" to include a card in the Steps button, in this order.",
@@ -162,12 +198,21 @@ const T = {
     empty:"No cards yet. Open Parents and add the first one." }
 };
 const STARTER = [
-  {id:"out",   emo:"🚪", ru:"Пойдём гулять!",  key:"Гулять",  en:"Let's go out",      step:true},
-  {id:"shoes", emo:"👟", ru:"Надень ботинки",  key:"Ботинки", en:"Wear your shoes",   step:true},
-  {id:"swim",  emo:"🏊", ru:"Пойдём плавать!", key:"Плавать", en:"Let's go swimming", step:true},
-  {id:"eat",   emo:"🍽️", ru:"Давай кушать!",   key:"Кушать",  en:"Let's eat",         step:false}
+  {id:"out",   group:"cards", emo:"🚪", ru:"Пойдём гулять!",  key:"Гулять",  en:"Let's go out",      step:true,  tip:"Когда он приносит ботинки или ведёт вас к двери, скажите медленно «Гулять!», подождите 5–10 секунд, потом идите."},
+  {id:"shoes", group:"cards", emo:"👟", ru:"Надень ботинки",  key:"Ботинки", en:"Wear your shoes",   step:true,  tip:"Покажите ботинки, скажите «Ботинки» и подождите. Любой звук или жест уже считается ответом."},
+  {id:"swim",  group:"cards", emo:"🏊", ru:"Пойдём плавать!", key:"Плавать", en:"Let's go swimming", step:true,  tip:"Перед бассейном покажите карточку и скажите «Плавать!». Повторите слово в воде."},
+  {id:"eat",   group:"cards", emo:"🍽️", ru:"Давай кушать!",   key:"Кушать",  en:"Let's eat",         step:false, tip:"Покажите карточку перед едой. Подождите, пока он нажмёт или издаст звук, потом дайте еду."}
 ];
-const EMOJI = ["🚪","👟","🏊","🍽️","💧","🥤","🍎","🍌","🍞","🥛","🐴","🐄","🐕","🐈","🚽","🛁","🛏️","📺","🚗","🧸","⚽","🫧","📖","🎵","🤸","🙂","😢","🤕","👋","❤️","✋","➕","🆘","🏠","🌳","👕"];
+const CORE = [
+  {id:"core-give",  group:"core", emo:"🤲", ru:"Дай",     key:"", en:"Give me", step:false, tip:"Он уже говорит «дай». Подождите, пока он скажет слово или нажмёт карточку, потом дайте."},
+  {id:"core-more",  group:"core", emo:"➕", ru:"Ещё",     key:"", en:"More",    step:false, tip:"Игра: дайте немного, остановитесь и подождите «ещё». Пузыри и мячики хорошо подходят."},
+  {id:"core-help",  group:"core", emo:"🆘", ru:"Помоги",  key:"", en:"Help",    step:false, tip:"Когда он тянет вас за руку, спросите «Помоги?», подождите, потом помогите."},
+  {id:"core-no",    group:"core", emo:"✋", ru:"Нет",     key:"", en:"No",      step:false, tip:"Принимайте «нет» каждый раз, когда он нажимает. Тогда ему не нужно кричать."},
+  {id:"core-yes",   group:"core", emo:"👍", ru:"Да",      key:"", en:"Yes",     step:false, tip:"Задайте ясный вопрос: «Хочешь воды?» и подождите «да». Сразу дайте."},
+  {id:"core-stop",  group:"core", emo:"🛑", ru:"Стоп",    key:"", en:"Stop",    step:false, tip:"Говорите спокойно и коротко. Используйте перед опасностью или когда игра закончилась."},
+  {id:"core-break", group:"core", emo:"😌", ru:"Мне нужен перерыв", key:"Перерыв", en:"I need a break", step:false, tip:"Когда ему тяжело, покажите карточку и отведите в тихое место. Позже научите нажимать самому."}
+];
+const EMOJI = ["🚪","👟","🏊","🍽️","💧","🥤","🍎","🍌","🍞","🥛","🐴","🐄","🐕","🐈","🚽","🛁","🛏️","📺","🚗","🧸","⚽","🫧","📖","🎵","🤸","🙂","😢","🤕","👋","❤️","✋","➕","🆘","🤲","👍","🛑","😌","🏠","🌳","👕"];
 const TINTS = ["--c1","--c2","--c3","--c4","--c5","--c6"];
 
 /* ---------------- storage: IndexedDB with an in-memory fallback ---------------- */
@@ -198,7 +243,7 @@ const DB = (() => {
 })();
 
 /* ---------------- state ---------------- */
-const S = { cards:[], profile:{parent:"", child:"Karim"}, set:{view:"one", en:true, lang:"ru"}, img:{}, aud:{}, taps:{}, cur:0 };
+const S = { cards:[], profile:{parent:"", child:"Karim"}, set:{view:"one", en:true, lang:"ru", choice:[], ft:[]}, img:{}, aud:{}, taps:{}, cur:0, mode:"cards", ftDone:false };
 const $ = id => document.getElementById(id);
 const stage = $("stage"), panel = $("panel");
 const t = k => (T[S.set.lang] || T.ru)[k] || k;
@@ -213,6 +258,26 @@ async function load(){
   if (profile) S.profile = {...S.profile, ...profile};
   if (set) S.set = {...S.set, ...set};
   if (taps) S.taps = taps;
+  let dirty = false;
+  for (const c of S.cards) {                       // bring cards saved by version 2 up to date
+    if (!c.group) { c.group = "cards"; dirty = true; }
+    const st = STARTER.find(x => x.id === c.id);
+    if (st && !c.tip) { c.tip = st.tip; dirty = true; }
+  }
+  if (!S.set.coreSeeded) {                         // add the core words board once
+    const have = new Set(S.cards.map(c => c.id));
+    S.cards.push(...CORE.filter(c => !have.has(c.id)).map(c => ({...c})));
+    S.set.coreSeeded = true; dirty = true; DB.set("settings", S.set);
+  }
+  if (!Array.isArray(S.set.choice)) S.set.choice = [];
+  if (!Array.isArray(S.set.ft)) S.set.ft = [];
+  if (!S.set.pairsSeeded) {                        // give Choice and First-Then a working example once
+    const has = id => S.cards.some(c => c.id === id);
+    if (!S.set.choice.some(Boolean) && has("swim") && has("eat")) S.set.choice = ["swim", "eat"];
+    if (!S.set.ft.some(Boolean) && has("shoes") && has("out")) S.set.ft = ["shoes", "out"];
+    S.set.pairsSeeded = true; DB.set("settings", S.set);
+  }
+  if (dirty) DB.set("cards", S.cards);
   await Promise.all(S.cards.map(async c => {
     let i = await DB.get("img_" + c.id), a = await DB.get("aud_" + c.id);
     try { // carry over photos and voice saved by the first version of the app
@@ -223,6 +288,7 @@ async function load(){
   }));
 }
 const saveCards = () => DB.set("cards", S.cards);
+const visible = () => S.cards.filter(c => (S.mode === "words") === (c.group === "core"));
 const saveSet = () => DB.set("settings", S.set);
 const tint = c => TINTS[Math.max(0, S.cards.indexOf(c)) % TINTS.length];
 
@@ -242,30 +308,67 @@ function render(){
   document.body.classList.toggle("hide-en", !S.set.en);
   document.documentElement.lang = S.set.lang;
   document.title = (S.profile.child || "Karim") + "'s Talking Cards";
-  $("viewBtn").textContent = S.set.view === "one" ? t("all") : t("one");
-  $("stepsBtn").textContent = t("steps");
-  $("stepsBtn").hidden = S.cards.filter(c => c.step).length < 2;
-  $("parentLbl").textContent = t("parents");
+  const pair = S.mode === "choice" || S.mode === "next", list = visible();
+  const vb = $("viewBtn"); vb.hidden = pair;
+  vb.innerHTML = (S.set.view === "one" ? "▦" : "▢") + `<span class="lbl">${esc(S.set.view === "one" ? t("all") : t("one"))}</span>`;
+  vb.setAttribute("aria-label", S.set.view === "one" ? t("all") : t("one"));
+  $("stepsBtn").innerHTML = `▶<span class="lbl">${esc(t("steps"))}</span>`; $("stepsBtn").setAttribute("aria-label", t("steps"));
+  $("stepsBtn").hidden = S.mode !== "cards" || list.filter(c => c.step).length < 2;
+  $("modeBtn").innerHTML = `☰<span class="lbl">${esc(t("modes"))}</span>`; $("modeBtn").setAttribute("aria-label", t("modes"));
+  $("parentLbl").innerHTML = `⚙<span class="lbl">${esc(t("parents"))}</span>`;
   stage.innerHTML = "";
   const dots = $("dots"); dots.innerHTML = "";
-  if (!S.cards.length) { stage.innerHTML = `<div class="card" style="height:100%;cursor:default"><div class="ru">${esc(t("empty"))}</div></div>`; return; }
-  S.cur = Math.min(Math.max(0, S.cur), S.cards.length - 1);
+  if (pair) { renderPair(); return; }
+  if (!list.length) { stage.innerHTML = `<div class="card" style="height:100%;cursor:default"><div class="ru">${esc(t("empty"))}</div></div>`; return; }
+  S.cur = Math.min(Math.max(0, S.cur), list.length - 1);
   if (S.set.view === "one") {
     const box = document.createElement("div"); box.className = "one";
     const prev = document.createElement("button"); prev.className = "nav"; prev.type = "button"; prev.textContent = "‹"; prev.setAttribute("aria-label", "Previous");
     const next = document.createElement("button"); next.className = "nav"; next.type = "button"; next.textContent = "›"; next.setAttribute("aria-label", "Next");
-    prev.disabled = S.cards.length < 2; next.disabled = S.cards.length < 2;
+    prev.disabled = list.length < 2; next.disabled = list.length < 2;
     prev.onclick = () => go(-1); next.onclick = () => go(1);
-    box.append(prev, cardEl(S.cards[S.cur]), next); stage.append(box);
-    if (S.cards.length <= 14) S.cards.forEach((c, i) => { const d = document.createElement("span"); d.className = "dot" + (i === S.cur ? " on" : ""); dots.append(d); });
+    box.append(prev, cardEl(list[S.cur]), next); stage.append(box);
+    if (list.length <= 14) list.forEach((c, i) => { const d = document.createElement("span"); d.className = "dot" + (i === S.cur ? " on" : ""); dots.append(d); });
   } else {
     const g = document.createElement("div"); g.className = "grid";
-    S.cards.forEach(c => g.append(cardEl(c))); stage.append(g); layoutGrid();
+    list.forEach(c => g.append(cardEl(c))); stage.append(g); layoutGrid();
   }
+}
+function pairCards(){ return (S.mode === "choice" ? S.set.choice : S.set.ft).map(id => S.cards.find(c => c.id === id)); }
+function renderPair(){
+  const [a, b] = pairCards();
+  if (!a || !b || a === b) { stage.innerHTML = `<div class="card" style="height:100%;cursor:default"><div class="ru">${esc(t("needTwo"))}</div></div>`; return; }
+  const box = document.createElement("div"); box.className = "pair";
+  const ca = cardEl(a), cb = cardEl(b), mid = document.createElement("div"); mid.className = "mid";
+  if (S.mode === "choice") {
+    const q = (x => x.key || x.ru);
+    mid.innerHTML = `<span></span><span class="ask"></span>`;
+    mid.firstChild.textContent = t("or");
+    mid.querySelector(".ask").textContent = `${t("askA")} ${q(a)} ${t("or")} ${q(b)}?`;
+  } else {
+    for (const [el, k] of [[ca, "first"], [cb, "then"]]) { const g = document.createElement("span"); g.className = "tagc"; g.textContent = t(k); el.prepend(g); }
+    ca.classList.toggle("dim", S.ftDone); cb.classList.toggle("dim", !S.ftDone); cb.classList.toggle("big", S.ftDone);
+    mid.innerHTML = `<b class="ar-h">→</b><b class="ar-v">↓</b>`;
+    const done = document.createElement("button"); done.type = "button"; done.className = "btn small"; done.textContent = S.ftDone ? t("again") : t("done2");
+    done.onclick = () => { if (busy) return; S.ftDone = !S.ftDone; render(); };
+    mid.append(done);
+  }
+  box.append(ca, mid, cb); stage.append(box);
+}
+function toggleMenu(){
+  const old = stage.querySelector(".menu"); if (old) { old.remove(); return; }
+  const m = document.createElement("div"); m.className = "menu"; m.setAttribute("role", "menu");
+  [["cards","🖼️","mCards","mCardsS"],["words","💬","mWords","mWordsS"],["choice","⚖️","mChoice","mChoiceS"],["next","➡️","mNext","mNextS"]].forEach(([k, ic, n, sub]) => {
+    const b = document.createElement("button"); b.type = "button"; b.className = k === S.mode ? "on" : "";
+    b.innerHTML = `<span aria-hidden="true">${ic}</span>${esc(t(n))}<small>${esc(t(sub))}</small>`;
+    b.onclick = () => { S.mode = k; S.cur = 0; S.ftDone = false; render(); };
+    m.append(b);
+  });
+  stage.append(m);
 }
 function layoutGrid(){
   const g = stage.querySelector(".grid"); if (!g) return;
-  const W = stage.clientWidth, H = stage.clientHeight, n = S.cards.length, gap = 12;
+  const W = stage.clientWidth, H = stage.clientHeight, n = visible().length, gap = 12;
   let cols = W < 560 ? 2 : W < 1000 ? 3 : 4;
   if (W > H * 1.2 && n <= 4) cols = n;                 // wide screen, few cards: one row
   else if (n <= 4) cols = n === 1 ? 1 : 2;             // tall screen, few cards: 2 by 2
@@ -276,7 +379,7 @@ function layoutGrid(){
   g.style.gridTemplateColumns = `repeat(${cols}, minmax(0, 1fr))`;
   g.style.gridAutoRows = rowH + "px";
 }
-function go(d){ if (busy || S.cards.length < 2) return; S.cur = (S.cur + d + S.cards.length) % S.cards.length; render(); }
+function go(d){ const n = visible().length; if (busy || n < 2) return; S.cur = (S.cur + d + n) % n; render(); }
 function mark(id){ document.querySelectorAll(".card").forEach(x => x.classList.toggle("active", x.dataset.id === id)); }
 function toast(msg){
   stage.querySelector(".toast")?.remove(); clearTimeout(toastTimer);
@@ -297,7 +400,7 @@ async function speak(c){
   if (S.aud[c.id]) return playAudio(S.aud[c.id]);
   if ("speechSynthesis" in window && ruVoice) {
     speechSynthesis.cancel();
-    for (const txt of [c.ru, c.key].filter(Boolean)) {
+    for (const txt of [c.ru, c.key && c.key.toLowerCase() !== c.ru.toLowerCase() ? c.key : ""].filter(Boolean)) {
       await new Promise(res => {
         const u = new SpeechSynthesisUtterance(txt); u.voice = ruVoice; u.lang = "ru-RU"; u.rate = 0.7;
         const guard = setTimeout(res, 8000);
@@ -318,9 +421,9 @@ async function say(c){
 }
 async function playSteps(){
   if (busy) return;
-  const seq = S.cards.filter(c => c.step);
+  const seq = visible().filter(c => c.step);
   for (const c of seq) {
-    if (S.set.view === "one") { S.cur = S.cards.indexOf(c); render(); }
+    if (S.set.view === "one") { S.cur = visible().indexOf(c); render(); }
     await say(c); await wait(1300);
   }
 }
@@ -349,6 +452,23 @@ function drawPanel(){
       <div class="row2">
         <label class="field">${esc(t("pname"))}<input type="text" id="pName" maxlength="40" autocomplete="off"></label>
         <label class="field">${esc(t("cname"))}<input type="text" id="cName" maxlength="40" autocomplete="off"></label>
+      </div>
+    </section>
+    <section class="sec">
+      <h2>${esc(t("coachTitle"))}</h2>
+      <div class="coach"><ol><li>${esc(t("c1"))}</li><li>${esc(t("c2"))}</li><li>${esc(t("c3"))}</li><li>${esc(t("c4"))}</li><li>${esc(t("c5"))}</li></ol></div>
+    </section>
+    <section class="sec">
+      <h2>${esc(t("modesSec"))}</h2>
+      <p class="hint"><b>${esc(t("choiceSet"))}</b></p>
+      <div class="row2">
+        <label class="field">${esc(t("cA"))}<select id="mc0"></select></label>
+        <label class="field">${esc(t("cB"))}<select id="mc1"></select></label>
+      </div>
+      <p class="hint"><b>${esc(t("nextSet"))}</b></p>
+      <div class="row2">
+        <label class="field">${esc(t("nF"))}<select id="mf0"></select></label>
+        <label class="field">${esc(t("nT"))}<select id="mf1"></select></label>
       </div>
     </section>
     <section class="sec">
@@ -384,13 +504,19 @@ function drawPanel(){
     const b = e.currentTarget;
     if (!b.dataset.armed) { b.dataset.armed = "1"; b.textContent = t("resetSure"); b.classList.add("danger"); return; }
     const have = new Set(S.cards.map(c => c.id));
-    S.cards = [...STARTER.filter(c => !have.has(c.id)).map(c => ({...c})), ...S.cards]; saveCards(); drawPanel();
+    S.cards = [...STARTER.filter(c => !have.has(c.id)).map(c => ({...c})), ...S.cards, ...CORE.filter(c => !have.has(c.id)).map(c => ({...c}))]; saveCards(); drawPanel();
   };
+  [["mc0","choice",0],["mc1","choice",1],["mf0","ft",0],["mf1","ft",1]].forEach(([id, key, n]) => {
+    const sel = $(id), blank = document.createElement("option"); blank.value = ""; blank.textContent = "— " + t("noneSel"); sel.append(blank);
+    S.cards.forEach(c => { const o = document.createElement("option"); o.value = c.id; o.textContent = c.ru; sel.append(o); });
+    sel.value = (S.set[key] || [])[n] || "";
+    sel.onchange = () => { const cur = (S.set[key] || []).slice(0, 2); cur[n] = sel.value; S.set[key] = [cur[0] || "", cur[1] || ""]; saveSet(); };
+  });
   const list = $("pList");
   S.cards.forEach((c, i) => {
     const row = document.createElement("div"); row.className = "item";
     row.innerHTML = `<div class="thumb" style="background:var(${tint(c)})">${S.img[c.id] ? `<img alt="">` : esc(c.emo || "🙂")}</div>
-      <div><b></b><small>${esc(tapStats(c.id))}${S.aud[c.id] ? " · 🎙" : ""}</small></div>
+      <div><b></b>${c.group === "core" ? `<span class="badge">${esc(t("gWords"))}</span>` : ""}<br><small>${esc(tapStats(c.id))}${S.aud[c.id] ? " · 🎙" : ""}</small><p class="tip"></p></div>
       <div class="acts">
         <button class="btn small" data-a="edit" type="button">${esc(t("edit"))}</button>
         <button class="btn small" data-a="up" type="button" aria-label="${esc(t("up"))}" ${i === 0 ? "disabled" : ""}>↑</button>
@@ -400,6 +526,7 @@ function drawPanel(){
       </div>`;
     if (S.img[c.id]) row.querySelector("img").src = S.img[c.id];
     row.querySelector("b").textContent = c.ru;
+    row.querySelector(".tip").textContent = c.tip || "";
     row.querySelector('[data-a="edit"]').onclick = () => drawEditor(c);
     row.querySelector('[data-a="up"]').onclick = () => { S.cards.splice(i - 1, 0, S.cards.splice(i, 1)[0]); saveCards(); drawPanel(); };
     row.querySelector('[data-a="down"]').onclick = () => { S.cards.splice(i + 1, 0, S.cards.splice(i, 1)[0]); saveCards(); drawPanel(); };
@@ -418,7 +545,7 @@ function drawPanel(){
 let rec = null;
 function drawEditor(card){
   const isNew = !card;
-  const d = isNew ? {id:"c" + Date.now().toString(36), ru:"", key:"", en:"", emo:"🙂", step:false, img:null, aud:null}
+  const d = isNew ? {id:"c" + Date.now().toString(36), ru:"", key:"", en:"", emo:"🙂", step:false, group:"cards", tip:"", img:null, aud:null}
                   : {...card, img:S.img[card.id] || null, aud:S.aud[card.id] || null};
   panel.innerHTML = `<div class="wrap">
     <div class="phead"><h1>${esc(t(isNew ? "newCard" : "editCard"))}</h1></div>
@@ -428,6 +555,10 @@ function drawEditor(card){
         <label class="field">${esc(t("keyw"))}<input type="text" id="eKey" maxlength="30" placeholder="${esc(t("keyPh"))}" autocomplete="off"></label>
         <label class="field">${esc(t("enl"))}<input type="text" id="eEn" maxlength="40" autocomplete="off"></label>
       </div>
+      <div class="row2">
+        <label class="field">${esc(t("group"))}<select id="eGroup"><option value="cards">${esc(t("gCards"))}</option><option value="core">${esc(t("gWords"))}</option></select></label>
+      </div>
+      <label class="field">${esc(t("tipL"))}<textarea id="eTip" maxlength="300" placeholder="${esc(t("tipPh"))}"></textarea></label>
     </section>
     <section class="sec">
       <h2>${esc(t("picture"))}</h2>
@@ -458,6 +589,7 @@ function drawEditor(card){
   </div>`;
   panel.scrollTop = 0;
   $("eRu").value = d.ru; $("eKey").value = d.key || ""; $("eEn").value = d.en || "";
+  $("eGroup").value = d.group === "core" ? "core" : "cards"; $("eTip").value = d.tip || "";
   const bg = `var(${card ? tint(card) : TINTS[S.cards.length % TINTS.length]})`;
   function pic(){
     const pv = $("ePrev"); pv.style.background = bg; pv.innerHTML = "";
@@ -502,9 +634,9 @@ function drawEditor(card){
     const ru = $("eRu").value.trim();
     if (!ru) { $("eErr").textContent = t("needPhrase"); $("eRu").focus(); return; }
     if (rec) { try { rec.stop(); } catch(e){} await wait(400); }
-    const c = {id:d.id, ru, key:$("eKey").value.trim(), en:$("eEn").value.trim(), emo:d.emo, step:!!d.step};
+    const c = {id:d.id, ru, key:$("eKey").value.trim(), en:$("eEn").value.trim(), emo:d.emo, step:!!d.step, group:$("eGroup").value, tip:$("eTip").value.trim()};
     const i = S.cards.findIndex(x => x.id === c.id);
-    if (i >= 0) S.cards[i] = c; else { S.cards.push(c); S.cur = S.cards.length - 1; }
+    if (i >= 0) S.cards[i] = c; else { S.cards.push(c); S.mode = c.group === "core" ? "words" : "cards"; S.cur = visible().length - 1; }
     if (d.img) { S.img[c.id] = d.img; await DB.set("img_" + c.id, d.img); } else { delete S.img[c.id]; DB.del("img_" + c.id); }
     if (d.aud) { S.aud[c.id] = d.aud; await DB.set("aud_" + c.id, d.aud); } else { delete S.aud[c.id]; DB.del("aud_" + c.id); }
     await saveCards(); drawPanel();
@@ -527,7 +659,7 @@ function shrink(file){
 
 /* ---------------- backup ---------------- */
 function exportAll(){
-  const data = {app:"karim-cards", v:2, profile:S.profile, settings:S.set, cards:S.cards, img:S.img, aud:S.aud};
+  const data = {app:"karim-cards", v:3, profile:S.profile, settings:S.set, cards:S.cards, img:S.img, aud:S.aud};
   const a = document.createElement("a");
   a.href = URL.createObjectURL(new Blob([JSON.stringify(data)], {type:"application/json"}));
   a.download = "talking-cards-" + today() + ".json"; document.body.append(a); a.click(); a.remove();
@@ -540,7 +672,7 @@ async function importAll(file){
     const data = JSON.parse(await file.text());
     if (data.app !== "karim-cards" || !Array.isArray(data.cards)) throw 0;
     for (const c of S.cards) { DB.del("img_" + c.id); DB.del("aud_" + c.id); }
-    S.cards = data.cards.filter(c => c && c.id && c.ru).map(c => ({id:String(c.id), ru:String(c.ru), key:String(c.key || ""), en:String(c.en || ""), emo:String(c.emo || "🙂"), step:!!c.step}));
+    S.cards = data.cards.filter(c => c && c.id && c.ru).map(c => ({id:String(c.id), ru:String(c.ru), key:String(c.key || ""), en:String(c.en || ""), emo:String(c.emo || "🙂"), step:!!c.step, group:c.group === "core" ? "core" : "cards", tip:String(c.tip || "")}));
     S.img = {}; S.aud = {};
     const ok = v => typeof v === "string" && /^data:(image|audio|video)\//.test(v);
     for (const c of S.cards) {
@@ -548,6 +680,8 @@ async function importAll(file){
       if (data.aud && ok(data.aud[c.id])) { S.aud[c.id] = data.aud[c.id]; await DB.set("aud_" + c.id, S.aud[c.id]); }
     }
     if (data.profile) { S.profile = {parent:String(data.profile.parent || ""), child:String(data.profile.child || "")}; await DB.set("profile", S.profile); }
+    const ids = new Set(S.cards.map(c => c.id)), pick = a => (Array.isArray(a) ? a : []).filter(x => ids.has(x)).slice(0, 2);
+    S.set.choice = pick(data.settings && data.settings.choice); S.set.ft = pick(data.settings && data.settings.ft); S.set.coreSeeded = true; S.set.pairsSeeded = true; await saveSet();
     await saveCards(); drawPanel(); $("pMsg").textContent = t("imported");
   } catch (e) { $("pMsg").textContent = t("badFile"); }
 }
@@ -555,6 +689,7 @@ async function importAll(file){
 /* ---------------- wiring ---------------- */
 $("viewBtn").onclick = () => { if (busy) return; S.set.view = S.set.view === "one" ? "all" : "one"; saveSet(); render(); };
 $("stepsBtn").onclick = playSteps;
+$("modeBtn").onclick = () => { if (!busy) toggleMenu(); };
 (() => { // the Parents button opens only after a 1.2 second hold, so the child does not open it by accident
   const b = $("parentBtn"); let timer = null;
   const start = () => { b.classList.add("holding"); timer = setTimeout(() => { stop(); openPanel(); }, 1200); };
@@ -568,13 +703,13 @@ $("stepsBtn").onclick = playSteps;
   let x0 = null, y0 = 0;
   stage.addEventListener("pointerdown", e => { x0 = e.clientX; y0 = e.clientY; });
   stage.addEventListener("pointerup", e => {
-    if (x0 == null || S.set.view !== "one") { x0 = null; return; }
+    if (x0 == null || S.set.view !== "one" || S.mode === "choice" || S.mode === "next") { x0 = null; return; }
     const dx = e.clientX - x0, dy = e.clientY - y0; x0 = null;
     if (Math.abs(dx) > 60 && Math.abs(dx) > Math.abs(dy) * 1.5) go(dx < 0 ? 1 : -1);
   });
 })();
 document.addEventListener("keydown", e => {
-  if (!panel.hidden || S.set.view !== "one") return;
+  if (!panel.hidden || S.set.view !== "one" || S.mode === "choice" || S.mode === "next") return;
   if (e.key === "ArrowRight") go(1); if (e.key === "ArrowLeft") go(-1);
 });
 window.addEventListener("resize", layoutGrid);
